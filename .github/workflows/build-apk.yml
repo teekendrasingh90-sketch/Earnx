@@ -1,0 +1,35 @@
+name: Build WebView APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Setup Cordova/Capacitor & Build
+      run: |
+        npm install -g @capacitor/cli
+        npm init -y
+        npm install @capacitor/core @capacitor/android
+        npx cap init WebApp com.example.webapp --web-dir .
+        npx cap add android
+        cd android && ./gradlew assembleDebug
+
+    - name: Upload APK Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: app-debug.apk
+        path: android/app/build/outputs/apk/debug/app-debug.apk
+        
